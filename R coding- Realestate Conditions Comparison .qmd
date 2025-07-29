@@ -1,0 +1,92 @@
+---
+title: "In-Class 8"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    df-print: kable
+execute: 
+  warning: false
+  message: false
+---
+
+```{r}
+
+# load packages
+library(tidyverse)
+
+```
+
+## Load data
+
+The data we will be working with contains information about the housing market in Ames, TX.
+
+We need to load the following RData file, which contains a training and testing dataset.
+
+```{r}
+
+# read in training and testing data
+load('regression-data.RData')
+
+# preview training data
+glimpse(data_train)
+
+```
+
+## Intial EDA 
+
+The model we want to create is: `sale_price ~ < set of Xs >`. Let's first inspect the response variable.
+
+```{r}
+
+# plot response variable
+# -> seems skewed right and not normal
+hist(data_train$sale_price)
+qqnorm(data_train$sale_price)
+
+# -> try log transformation and recheck
+hist(log(data_train$sale_price))
+qqnorm(log(data_train$sale_price))
+
+```
+
+The distribution of `sale_price` appears to be much more normal after transforming. So let's use `log(sale_price) ~ < set of Xs >` as our model.
+
+This is technically a regression with a transformed response, so it is a generalized linear model (GLM). Once we make the transformation, everything works as usual, only the units and interpretations change.
+
+## Variable selection
+
+Now try to find some $X$ variables to use in a model.
+
+```{r}
+summary(data_train)
+mod_data_train = lm(log(sale_price) ~ foundation+sale_condition, data=data_train)
+summary(mod_data_train)
+mod_data_train1 = lm(log(sale_price) ~ condition_1+condition_2+functional, data=data_train)
+summary(mod_data_train1)
+
+plot(x=data_train$sale_price, y=data_train$foundation)
+abline(mod_data_train, col="red")
+
+plot(x=data_train$sale_price, y=data_train$sale_condition)
+abline(mod_data_train, col="blue")
+
+coef(mod_data_train)
+coef(mod_data_train1)
+```
+
+## Prediction
+
+Once you have some candidate models, see which one is the best by calculating the $RMSE$.
+
+```{r}
+
+area <- lm(log(sale_price)~foundation, data=data_train)
+log_area <- lm(log(sale_price)~sale_condition, data=data_train)
+
+yardstick::rmse_vec(truth=log(data_test$sale_price), estimate= predict(log_area, newdata=data_test))
+
+yardstick::rmse_vec(truth=log(data_test$sale_price), estimate= predict(area, newdata=data_test))
+
+```
