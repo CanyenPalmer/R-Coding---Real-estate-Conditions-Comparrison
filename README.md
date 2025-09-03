@@ -1,4 +1,4 @@
-# R-Coding---Real-estate-Conditions-Comparrison
+# R-Coding---Real-estate-Conditions-Comparison
 
 ---
 **Project Spotlight: Real Estate Price Modeling in Ames, TX**
